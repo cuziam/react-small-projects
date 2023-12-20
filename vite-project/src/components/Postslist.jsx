@@ -1,28 +1,31 @@
-import { useState } from "react";
-
+import { useLoaderData } from "react-router-dom";
 import Post from "./Post";
-import NewPost from "./NewPost";
-import Modal from "./Modal";
 import classes from "./Postslist.module.css";
+import axios from "axios";
 
-function Postslist({ isPosting, onStopPosting }) {
-  const [posts, setPosts] = useState([]);
+function Postslist() {
+  const posts = useLoaderData();
 
-  const addPostHandler = (postData) => {
-    //이전 상태를 사용할 때는 함수형 업데이트를 사용한다.
-    console.log("addPostHandler", posts);
-    setPosts((existingPosts) => [postData, ...existingPosts]);
+  const addPostHandler = async (postData) => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: "http://localhost:8080/posts",
+        data: postData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("post 요청 성공\n", response);
+      setPosts((existingPosts) => [postData, ...existingPosts]);
+    } catch (error) {
+      console.log("에러 발생\n", error);
+    }
   };
 
   return (
     //형제 요소는 나란히 쓸 수 없다. 다른 태그로 묶어줘야 한다.
     <>
-      {isPosting && (
-        <Modal onClose={onStopPosting}>
-          <NewPost onCancel={onStopPosting} onAddPost={addPostHandler} />
-        </Modal>
-      )}
-
       {posts.length > 0 && (
         <ul className={classes.posts}>
           {posts.map((post) => (
